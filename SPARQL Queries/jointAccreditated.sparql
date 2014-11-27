@@ -1,0 +1,15 @@
+PREFIX vets: <http://logd.tw.rpi.edu/source/data-gov/dataset/1150/vocab/raw/>
+PREFIX ethnic: <http://logd.tw.rpi.edu/source/data-gov/dataset/1211/vocab/raw/>
+select ?state count(xsd:string(?med) as ?medical_exp) count(distinct ?exp) count(xsd:string(?med) as ?medical_exp)/count(distinct ?exp) sum(distinct xsd:double(?exp) as ?e) (sum(distinct xsd:double(?exp) as ?e)/(count(xsd:string(?med) as ?medical_exp)/count(distinct ?exp)))
+WHERE {
+GRAPH  <http://logd.tw.rpi.edu/source/data-gov/dataset/1211/version/1st-anniversary> {
+    ?s ethnic:state ?state.
+   ?s ethnic:joint_commission_accreditation ?med .
+FILTER regex(?med, '^Y').
+ }
+GRAPH  <http://logd.tw.rpi.edu/source/data-gov/dataset/1150/version/1st-anniversary> {
+    ?s1 vets:state ?state.
+   ?s1 vets:medical_care ?exp .
+ }
+}
+order by ?state

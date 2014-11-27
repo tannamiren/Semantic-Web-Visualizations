@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <!--   import Google visualization  API -->
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+
+    <!--   customize function -->
+    <script type="text/javascript">
+    /* <![CDATA[ */
+
+      // load google visualization packages - STEP 1
+      google.load('visualization', '1', {'packages': ['geochart']});
+
+      // set callback function for drawing visualizations - STEP 2
+      google.setOnLoadCallback(drawMap);
+
+            function drawMap() {
+      	//load static data - STEP 3
+				//load data using SPARQL query
+				var sparqlproxy = "http://logd.tw.rpi.edu/ws/sparqlproxy.php";
+				//***MODIFY queryloc
+				var queryloc = "http://www.utdallas.edu/~mat130830/outpatientMedicalCare.sparql";
+				var service = "http://logd.tw.rpi.edu/sparql";
+				var queryurl = sparqlproxy
+                + "?" + "output=gvds"
+                + "&service-uri=" + encodeURIComponent(service)
+                + "&query-uri=" + encodeURIComponent(queryloc) ;
+
+      	var query = new google.visualization.Query(queryurl); // Send the query.
+      	query.send(handleQueryResponse);
+      }
+
+
+      function  handleQueryResponse(response) {
+      	// Check for query response errors. - STEP 4
+      	if (response.isError()) {
+           alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+           return;
+      	}
+
+      	// read data  - STEP 5
+      	var data = response.getDataTable();
+
+      	// create new data - STEP 6
+      	                var newdata = new google.visualization.DataTable();
+                newdata.addColumn('string', 'State');
+                newdata.addColumn('number', 'Medical expenses');
+
+				//***MODIFY column definitions
+
+        // populate each row - STEP 7
+				//***MODIFY response processing code
+      	var rows = data.getNumberOfRows();
+                 for (var i = 0; i < rows; i++ )
+                {
+                    var state = 'US-' + data.getValue(i, 0);
+                    var value=0;
+                    var whiteAmerican=0, africanAmerican=0, otherAmerican=0, africanAmericanRatio=0;
+                    if(data.getValue(i, 1)==0)
+                        whiteAmerican=0;
+                    else
+                        whiteAmerican=data.getValue(i, 1);
+
+                    if(data.getValue(i, 2)==0)
+                        africanAmerican=0;
+                    else
+                        africanAmerican=data.getValue(i, 2);
+
+                    if(data.getValue(i, 3)==0)
+                        otherAmerican=0;
+                    else
+                        otherAmerican=data.getValue(i, 3);
+
+                    if(data.getValue(i, 4)==0)
+                        value=0;
+                    else
+                        value =  data.getValue(i, 4); // AGI figure uses thousand-dollar unit
+
+                    if(africanAmerican==0)
+                        africanAmericanRatio=0;
+                    else
+                        africanAmericanRatio=(value*africanAmerican)/(whiteAmerican+africanAmerican+otherAmerican);
+                    newdata.addRow([state, africanAmericanRatio]);
+                }
+
+
+
+      	// configure map options - STEP 8
+      	var options = {
+					region: 'US',
+					dataMode: 'regions',
+					resolution: 'provinces',
+					width: 800,
+					height: 500,
+					colorAxis: {colors:['#FFFF00','#E00000']}
+				};
+
+
+        // define geomap instance - STEP 9
+        var viz = document.getElementById('map_canvas');
+                var geochart = new google.visualization.GeoChart(viz);
+ //       var geochart = new google.visualization.GeoMap(document.getElementById('map_canvas'));
+				geochart.draw(newdata, options);
+
+				};//handle query response function
+    /* ]]> */
+    </script>
+</head>
+<body>
+<div><h2>Medical Care Expenses of All African American Veterans in U. S.</h2></div>
+<div>Hover over a State to see details</div>
+<div id='map_canvas'>Loading Map ...</div>
+</body>
+</html>

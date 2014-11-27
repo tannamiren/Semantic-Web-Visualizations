@@ -1,0 +1,19 @@
+PREFIX vets: <http://logd.tw.rpi.edu/source/data-gov/dataset/1150/vocab/raw/>
+PREFIX ethnic: <http://logd.tw.rpi.edu/source/data-gov/dataset/1209/vocab/raw/>
+select ?state SUM(DISTINCT xsd:double(?wamerican) as ?wAm) SUM(DISTINCT xsd:double(?aamerican) as ?aAm) SUM(DISTINCT xsd:double(?other) as ?oAm) SUM(DISTINCT xsd:double(?med) as ?medical_expense) 
+WHERE {
+GRAPH   <http://logd.tw.rpi.edu/source/data-gov/dataset/1209/version/1st-anniversary>{
+   ?s1 ethnic:white_outpatient ?wamerican .
+?s1 ethnic:state ?state.
+?s1 ethnic:visn_name ?name.
+?s1 ethnic:city ?city.
+?s1 ethnic:visn ?visn.
+?s1 ethnic:african_american_outpatient ?aamerican.
+?s1 ethnic:other_outpatient ?other.
+ }
+GRAPH  <http://logd.tw.rpi.edu/source/data-gov/dataset/1150/version/1st-anniversary> {
+    ?s vets:state ?state.
+   ?s vets:medical_care ?med .
+ }
+}
+order by ?state

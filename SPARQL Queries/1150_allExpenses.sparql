@@ -1,0 +1,9 @@
+PREFIX vets: <http://logd.tw.rpi.edu/source/data-gov/dataset/1150/vocab/raw/>
+select ?state SUM(xsd:double(?med) as ?m)
+WHERE{
+GRAPH <http://logd.tw.rpi.edu/source/data-gov/dataset/1150/version/1st-anniversary>{
+?s1 vets:state ?state.
+?s1 vets:medical_care ?med.
+}
+}
+ORDER BY ?state
